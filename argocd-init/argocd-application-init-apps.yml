@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd-applications-management
+  namespace: kube-controller
+spec:
+  destination:
+    namespace: kube-controller
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    helm:
+      valueFiles:
+        - values.yaml
+    path: argocd-app-applications
+    repoURL: git@github.com:kieunguyenql/kube-cicd.git
+    targetRevision: main
+  syncPolicy:
+    automated:
+      prune: true
