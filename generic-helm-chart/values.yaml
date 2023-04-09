@@ -1,3 +1,4 @@
+####################################################### global ###################################################################
 # -- number of replicas
 replicaCount: 1
 
@@ -8,26 +9,60 @@ image:
 
 restartPolicy: Always
 
+deploymentStrategy: {}
+
 initContainers: []
 
 imagePullSecrets: []
 
-# should set both
 nameOverride: ""
+#should define fullnameOverride for name of resource
+
 fullnameOverride: ""
+
+######################################################### Service account (option) ##########################################################
+serviceAccount:
+  # -- Specifies whether a service account should be created
+  create: false
+
+  # -- Annotations to add to the service account
+  annotations: {}
+
+  # -- The name of the service account to use. If not set and create is true, a name is generated using the fullname template.
+  name: ""
+########################################################## pod configuration ##################################################
 
 # -- labels to add to the Pods
 podLabels: {}
 
-command: ~
+podSecurityContext: {}
 
-args: ~
+securityContext: {}
+
+# -- How long the pod may take to terminate before it is killed by the kubelet
+terminationGracePeriodSeconds: 30
+
+# -- Set to true to enable host networking
+hostNetwork: false
+
+# -- Defaults to "ClusterFirst" if hostNetwork is false and "ClusterFirstWithHostNet" if hostNetwork is true.
+dnsPolicy:
+
+# -- Optional DNS settings
+dnsConfig: {}
+
+# ~ inherited CMD of images, {} mean overwrite with empty, so should use ENTRYPOINT in IMAGE, any command specified in the command field of the container spec will be passed as arguments to the ENTRYPOINT command.
+command: {} # ~
+
+args: {} # ~
 
 # -- Directly set envFrom config
 envFrom: []
 
 # -- Directly set environment variables
 env: []
+#  - FOO: bar
+#  - BAZ: qux
 
 # -- Set environment variables from configMaps or Secrets
 envValueFrom: {}
@@ -136,7 +171,6 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
-########################################################################################
 serviceMonitors:
     # -- If a ServiceMonitor should be deployed. Needs the CRD installed
   - enabled: false
@@ -155,3 +189,20 @@ serviceMonitors:
     # -- The label 'job' in prometheus. Defaults to the release name
     jobLabel: ""
 
+###select base on labels
+nodeSelector: {}
+
+### node tains
+tolerations: []
+
+# -- Enable an AntiAffinity between pods, spreading them across nodes if possible with a priority of 100.
+enableNodeSpreadPodAntiAffinity: false
+
+# -- Enable an AntiAffinity between pods, spreading them across zones if possible with a priority of 50.
+enableZoneSpreadPodAntiAffinity: false
+
+# -- Additional preferredDuringSchedulingIgnoredDuringExecution podAntiAffinity terms
+additionalPreferredPodAntiAffinity: {}
+
+# -- Additional affinity terms. **Do not** specify PodAntiAffinities with preferredDuringSchedulingIgnoredDuringExecution here, these go to `additionalPreferredPodAntiAffinity`. All `requiredDuringScheduling` affinities need to be defined here.
+affinity: {}

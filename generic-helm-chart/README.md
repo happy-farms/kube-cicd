@@ -9,9 +9,6 @@ A chart for generic applications. Use this if you need to deploy something witho
 | kieunv |  |  |
 | kieunv |  |  |
 
-## Upgrading
-
-See [the upgrading instructions](UPGRADING.md) for upgrades with breaking changes.
 
 ## Complex values
 
