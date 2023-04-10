@@ -1,0 +1,57 @@
+stages:
+  - build
+  - deploy
+
+variables:
+
+  DOCKER_HOST: tcp://docker:2375/
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  REGISTRY: ""
+  IMAGE_NAME: kieunguyenql/my-app
+  IMAGE_TAG: $CI_COMMIT_REF_NAME
+  PROJECT_CONFIG_FOLDER: ""
+
+build:
+  stage: build
+  image:
+    name: docker:20.10.16
+  services:
+    - name: docker:20.10.16-dind
+      alias: docker
+      command:
+        - "--tls=false"
+
+  before_script:
+    - docker info
+    - docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD
+  script:
+    - docker build -t $IMAGE_NAME:$IMAGE_TAG .
+    - docker push $IMAGE_NAME:$IMAGE_TAG
+
+  only:
+    - dev
+    - main
+  tags:
+    - gitlab-runner
+
+deploy:
+  image: kieunguyenql/argocd-cli:latest
+  stage: deploy
+  script:
+    - git clone https://gitlab.com/happy-farms/kube-cicd.git
+    - cd generic-helm-chart/$PROJECT_CONFIG_FOLDER
+    - sed -i "s/$IMAGE_NAME:.*/$IMAGE_NAME:$IMAGE_TAG/" values.yaml
+    - git add values.yaml
+    - git commit -m "Update image tag to $IMAGE_TAG"
+    - git push origin $CI_COMMIT_BRANCH
+
+    # Log in to Argo CD and sync the application
+    - argocd login --username=admin --password=admin --insecure my-argocd.example.com
+    - argocd app sync my-app
+
+  only:
+    - dev
+    - main
+  tags:
+    - gitlab-runner
